@@ -77,12 +77,12 @@ def gen_check_rand_calls(seed, max_num_calls):
                     return False, "Not enough calls to random.random()"
                 return False, "Too many calls to random.random()"
 
-        return False, "Bug in test code?"
+        return False, "Incorrect number of calls to random.random()"
 
     return check
 
 
-CHECK_RAND_20170217 = gen_check_rand_calls(20170217, 7)
+CHECK_RAND_20170217 = gen_check_rand_calls(20170217, 100)
 
 
 def convert_city(params, city_key="city"):
@@ -548,7 +548,7 @@ def test_vaccinate_person(test_params):
         # Use pre-generated random checking function
         check_rand = CHECK_RAND_20170217
     else:
-        check_rand = gen_check_rand_calls(params["seed"], 7)
+        check_rand = gen_check_rand_calls(params["seed"], 100)
 
     aug_person = tuple(params["aug_person"])
 
@@ -585,7 +585,7 @@ def test_vaccinate_city(test_params):
     expected_num_rand_calls = len([p[0] for p in city if p[0] == "S"])
 
     # use the same seed for all the tests
-    if params["seed"] == sir.TEST_SEED and expected_num_rand_calls < 7:
+    if params["seed"] == sir.TEST_SEED and expected_num_rand_calls < 100:
         # Use pre-generated random checking function
         check_rand = CHECK_RAND_20170217
     else:
