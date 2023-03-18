@@ -1,7 +1,7 @@
 '''
 Epidemic modelling
 
-YOUR NAME
+Obiuto Obetta
 
 Functions for running a simple epidemiological simulation
 '''
@@ -11,8 +11,6 @@ import sys
 
 import click
 
-# This seed should be used for debugging purposes only!  Do not refer
-# to this variable in your code.
 TEST_SEED = 20170217
 
 def has_an_infected_neighbor(city, location):
@@ -29,18 +27,15 @@ def has_an_infected_neighbor(city, location):
       False otherwise.
     '''
 
-    # The location needs to be a valid index for the city list.
     assert 0 <= location < len(city)
 
-    # This function should only be called when the person at location
-    # is susceptible to infection.
     disease_state, _ = city[location]
     assert disease_state == "S"
 
-    # YOUR CODE HERE
+    disease_state_left, _ = city[location - 1]
+    disease_state_right, _ = city[location + 1]
 
-    # REPLACE False WITH AN APPROPRIATE RETURN VALUE
-    return False
+    return disease_state_left == "I" or disease_state_right == "I"
 
 
 def advance_person_at_location(city, location, days_contagious):
@@ -57,13 +52,23 @@ def advance_person_at_location(city, location, days_contagious):
       the person has been in that state after simulating one day.
 
     '''
-
+    advanced_state = None
+    advanced_days = None
     assert 0 <= location < len(city)
 
-    # YOUR CODE HERE
+    disease_state, days = city[location]
 
-    # REPLACE ("R", 0) WITH AN APPROPRIATE RETURN VALUE
-    return ("R", 0)
+    if disease_state == "S" and has_an_infected_neighbor(city, location):
+        advanced_state = "I"
+        advanced_days = 0
+    elif disease_state == "I" and days + 1 == days_contagious:
+        advanced_state = "R"
+        advanced_days = 0
+    else:
+        advanced_state = disease_state
+        advanced_days = days + 1
+
+    return (advanced_state, advanced_days)
 
 
 def simulate_one_day(starting_city, days_contagious):
@@ -77,10 +82,13 @@ def simulate_one_day(starting_city, days_contagious):
 
     Returns (list of tuples): the state of the city after one day
     '''
-    # YOUR CODE HERE
+    simulated_city = []
 
-    # REPLACE [] WITH AN APPROPRIATE RETURN VALUE
-    return []
+    for location, _ in enumerate(starting_city):
+        p = advance_person_at_location(starting_city, location, days_contagious)
+        simulated_city.append(p)
+
+    return simulated_city
 
 
 def is_transmission_possible(city):
@@ -93,9 +101,10 @@ def is_transmission_possible(city):
     Returns (boolean): True if the city has at least one susceptible person
         with an infected neighbor, False otherwise.
     """
-    # YOUR CODE HERE
-
-    # REPLACE False WITH AN APPROPRIATE RETURN VALUE
+    for location, person in enumerate(city):
+        disease_state, _ = person
+        if disease_state == "S" and has_an_infected_neighbor(city, location):
+            return True
     return False
 
 
@@ -111,10 +120,13 @@ def run_simulation(starting_city, days_contagious):
     Returns tuple (list of tuples, int): the final state of the city
       and the number of days actually simulated.
     '''
-    # YOUR CODE HERE
+    simulated_days = 0
+    
+    while is_transmission_possible(starting_city):
+        simulated_city = simulate_one_day(starting_city, days_contagious)
+        simulated_days += 1
 
-    # REPLACE ([], 0) WITH AN APPROPRIATE RETURN VALUE
-    return ([], 0)
+    return (simulated_city, simulated_days)
 
 
 def vaccinate_person(vax_tuple):
@@ -129,10 +141,14 @@ def vaccinate_person(vax_tuple):
     Returns (string, int): a person tuple
     '''
 
-    # YOUR CODE HERE
+    disease_state, days, eagerness = vax_tuple
 
-    # REPLACE ("R", 0) WITH AN APPROPRIATE RETURN VALUE
-    return ("R", 0)
+    if disease_state == "S":
+        e = random.random()
+        if e < eagerness:
+            return ("V", 0)
+    
+    return (disease_state, days)
 
 
 def vaccinate_city(city_vax_tuples, random_seed):
@@ -149,11 +165,12 @@ def vaccinate_city(city_vax_tuples, random_seed):
     Returns (list of (string, int) tuples): state of the people in the
       city after vaccination
     '''
+    vaxxed_city = []
 
-    # YOUR CODE HERE
+    for person in city_vax_tuples:
+        vaxxed_city.append(vaccinate_person(person))
 
-    # REPLACE [] WITH AN APPROPRIATE RETURN VALUE
-    return []
+    return vaxxed_city
 
 
 def vaccinate_and_simulate(city_vax_tuples, days_contagious, random_seed):
@@ -169,10 +186,10 @@ def vaccinate_and_simulate(city_vax_tuples, days_contagious, random_seed):
     Returns (list of tuples, int): the state of the city at the end of the
       simulation and the number of days simulated.
     """
-    # YOUR CODE HERE
+    vaxxed_city = vaccinate_city(city_vax_tuples, random_seed)
+    simulated_city = run_simulation(vaxxed_city, days_contagious)
 
-    # REPLACE ([], 0) WITH AN APPROPRIATE RETURN VALUE
-    return ([], 0)
+    return simulated_city
 
 
 ################ Do not change the code below this line #######################
